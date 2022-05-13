@@ -5,7 +5,7 @@
 <head>
 <meta charset="ISO-8859-1">
 <link rel="stylesheet" type="text/css" href="css/main.css">
-<title>Insert title here</title>
+<title>Lisää asiakas</title>
 </head>
 <body>
 <form id="tiedot">
@@ -36,72 +36,59 @@
 <span id="ilmo"></span>
 </body>
 <script>
-$(document).ready(function(){
-	$("#takaisin").click(function(){
-		document.location="listaaautot.jsp";
-	});
-	$("#tiedot").validate({						
-		rules: {
-			rekNo:  {
-				required: true,
-				minlength: 3				
-			},	
-			merkki:  {
-				required: true,
-				minlength: 2				
-			},
-			malli:  {
-				required: true,
-				minlength: 1
-			},	
-			vuosi:  {
-				required: true,
-				number: true,
-				minlength: 4,
-				maxlength: 4,
-				min: 1900,
-				max: new Date().getFullYear()+1 //Auto voi olla ensivuoden mallia
-			}	
-		},
-		messages: {
-			rekNo: {     
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"			
-			},
-			merkki: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"
-			},
-			malli: {
-				required: "Puuttuu",
-				minlength: "Liian lyhyt"
-			},
-			vuosi: {
-				required: "Puuttuu",
-				number: "Ei kelpaa",
-				minlength: "Liian lyhyt",
-				maxlength: "Liian pitkä",
-				min: "Liian pieni",
-				max: "Liian suuri"
-			}
-		},			
-		submitHandler: function(form) {	
-			lisaaTiedot();
-		}		
-	}); 	
-});
-//funktio tietojen lisäämistä varten. Kutsutaan backin POST-metodia ja välitetään kutsun mukana uudet tiedot json-stringinä.
-//POST /autot/
+function tutkiKey(event){
+	if(event.keyCode==13){
+		lisaaTiedot();
+	}
+	
+}
+
+document.getElementById("asiakas_id").focus();
+
+
+
 function lisaaTiedot(){	
-	var formJsonStr = formDataJsonStr($("#tiedot").serializeArray()); //muutetaan lomakkeen tiedot json-stringiksi
-	$.ajax({url:"autot", data:formJsonStr, type:"POST", dataType:"json", success:function(result) { //result on joko {"response:1"} tai {"response:0"}       
-		if(result.response==0){
-      	$("#ilmo").html("Auton lisääminen epäonnistui.");
-      }else if(result.response==1){			
-      	$("#ilmo").html("Auton lisääminen onnistui.");
-      	$("#rekNo", "#merkki", "#malli", "#vuosi").val("");
+	var ilmo="";
+	var d = new Date();
+	if(document.getElementById("asiakas_id").value.length<3){
+		ilmo="Asiakastunnus ei kelpaa!";		
+	}else if(document.getElementById("etunimi").value.length<2){
+		ilmo="Etunimi ei kelpaa!";	
+	}else if(document.getElementById("sukunimi").value.length<2){
+		ilmo="Sukunimi ei kelpaa!";	}
+	else if(document.getElementById("sposti").value.length<2){
+			ilmo="Sposti ei kelpaa!";	
+	}else if(document.getElementById("puhelin").value*1!=document.getElementById("puhelin").value){
+		ilmo="Puhelin numero ei ole luku!";	
+	}
+	if(ilmo!=""){
+		document.getElementById("ilmo").innerHTML=ilmo;
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 3000);
+		return;
+	}
+	document.getElementById("etunimi").value=siivoa(document.getElementById("etunimi").value);
+	document.getElementById("sukunimi").value=siivoa(document.getElementById("sukunimi").value);
+	document.getElementById("sposti").value=siivoa(document.getElementById("sposti").value);
+	document.getElementById("puhelin").value=siivoa(document.getElementById("puhelin").value);	
+		
+	var formJsonStr=formDataToJSON(document.getElementById("tiedot")); 
+	fetch("asiakkaat",{
+	      method: 'POST',
+	      body:formJsonStr
+	    })
+	.then( function (response) {
+		return response.json()
+	})
+	.then( function (responseJson) {
+		var vastaus = responseJson.response;		
+		if(vastaus==0){
+			document.getElementById("ilmo").innerHTML= "Asiakkaan lisääminen epäonnistui";
+      	}else if(vastaus==1){	        	
+      		document.getElementById("ilmo").innerHTML= "Asiakkaan lisääminen onnistui";			      	
 		}
-  }});	
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 5000);
+	});	
+	document.getElementById("tiedot").reset(); 
 }
 </script>
 </html>

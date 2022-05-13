@@ -21,7 +21,7 @@ public class JsonStrToObj {
 					strBuffer.append(line);
 					line = reader.readLine(); 
 				}
-				jsonObject = new JSONObject(strBuffer.toString());			
+				jsonObject = new JSONObject(strBuffer.toString());					
 			} catch (IOException e) {			
 				e.printStackTrace();
 			}		
